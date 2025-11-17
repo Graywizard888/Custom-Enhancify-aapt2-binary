@@ -15,23 +15,38 @@ endif()
 # Architecture-specific optimization flags
 if(ANDROID_ABI STREQUAL "arm64-v8a")
     set(ARCH_FLAGS "-march=armv8-a")
+    message(STATUS "Optimizing for ARM64 (armv8-a)")
 elseif(ANDROID_ABI STREQUAL "armeabi-v7a")
     set(ARCH_FLAGS "-march=armv7-a -mfpu=neon")
+    message(STATUS "Optimizing for ARMv7 (armv7-a + NEON)")
 elseif(ANDROID_ABI STREQUAL "x86_64")
-    set(ARCH_FLAGS "-march=x86-64")
+    set(ARCH_FLAGS "-march=x86-64 -msse4.2")
+    message(STATUS "Optimizing for x86_64 (SSE4.2)")
 elseif(ANDROID_ABI STREQUAL "x86")
-    set(ARCH_FLAGS "-march=i686")
+    set(ARCH_FLAGS "-march=i686 -msse3")
+    message(STATUS "Optimizing for x86 (i686 + SSE3)")
 endif()
 
-# Set optimization flags with ThinLTO and compatibility flags
-set(OPT_FLAGS "-O3 -flto=thin -fno-split-lto-unit ${ARCH_FLAGS}")
+# Aggressive optimization flags WITHOUT LTO
+# LTO is incompatible with NDK precompiled system libraries
+set(OPT_FLAGS "-O3 ${ARCH_FLAGS}")
+set(OPT_FLAGS "${OPT_FLAGS} -fomit-frame-pointer")
+set(OPT_FLAGS "${OPT_FLAGS} -ffunction-sections")
+set(OPT_FLAGS "${OPT_FLAGS} -fdata-sections")
+set(OPT_FLAGS "${OPT_FLAGS} -fvisibility=hidden")
+set(OPT_FLAGS "${OPT_FLAGS} -fvisibility-inlines-hidden")
+
+# Additional performance flags
+if(ANDROID_ABI STREQUAL "arm64-v8a" OR ANDROID_ABI STREQUAL "armeabi-v7a")
+    set(OPT_FLAGS "${OPT_FLAGS} -ffast-math")
+endif()
 
 # Set global cflags and cxxflags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPT_FLAGS} -fcolor-diagnostics -fPIC -Wno-attributes -std=gnu11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPT_FLAGS} -fcolor-diagnostics -fPIC -Wno-attributes -std=gnu++2a")
 
-# Static link with ThinLTO support and compatibility flags
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -flto=thin -fno-split-lto-unit -O3 -Wl,--lto-O3")
+# Linker flags with aggressive dead code elimination
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -O3 -Wl,--gc-sections -Wl,--strip-all -Wl,-O3")
 
 # platform tools version
 # see the misc/platform_tools_version.h
