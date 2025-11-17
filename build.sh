@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+CXX_FLAGS="-O3 -march=native -flto"
+LINKER_FLAGS="-flto"
+
 # Define the targets.
 API="30"
 ARCHITECTURES=("armeabi-v7a" "arm64-v8a" "x86" "x86_64")
@@ -48,6 +51,8 @@ cmake -GNinja \
   -DCMAKE_BUILD_TYPE=Release \
   -DPNG_SHARED=OFF \
   -DZLIB_USE_STATIC_LIBS=ON
+  -DCMAKE_CXX_FLAGS="$CXX_FLAGS" \
+  -DCMAKE_EXE_LINKER_FLAGS="$LINKER_FLAGS"
 
 # Build the binary
 ninja -C build aapt2
