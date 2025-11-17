@@ -15,8 +15,12 @@ endif()
 # set global cflags and cxxflags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fcolor-diagnostics -fPIC -Wno-attributes -std=gnu11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics -fPIC -Wno-attributes -std=gnu++2a")
-# static link
-set(CMAKE_EXE_LINKER_FLAGS "-static")
+# Optimization flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -flto")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -march=native -flto")
+
+# Linker flags for LTO
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
 
 # platform tools version
 # see the misc/platform_tools_version.h
