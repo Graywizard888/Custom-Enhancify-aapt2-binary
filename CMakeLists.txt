@@ -12,41 +12,26 @@ else()
     message(FATAL_ERROR "Unsupported architecture: ${ANDROID_ABI}")
 endif()
 
-# Enable Link Time Optimization globally
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
-
 # Architecture-specific optimization flags
 if(ANDROID_ABI STREQUAL "arm64-v8a")
     set(ARCH_FLAGS "-march=armv8-a")
-    message(STATUS "Building for ARM64 (armv8-a)")
 elseif(ANDROID_ABI STREQUAL "armeabi-v7a")
-    set(ARCH_FLAGS "-march=armv7-a" "-mfpu=neon")
-    message(STATUS "Building for ARMv7 (armv7-a + NEON)")
+    set(ARCH_FLAGS "-march=armv7-a -mfpu=neon")
 elseif(ANDROID_ABI STREQUAL "x86_64")
     set(ARCH_FLAGS "-march=x86-64")
-    message(STATUS "Building for x86_64")
 elseif(ANDROID_ABI STREQUAL "x86")
     set(ARCH_FLAGS "-march=i686")
-    message(STATUS "Building for x86 (i686)")
 endif()
 
-# Apply optimization flags
-add_compile_options(
-    -O3
-    ${ARCH_FLAGS}
-    -fcolor-diagnostics
-    -fPIC
-    -Wno-attributes
-    $<$<COMPILE_LANGUAGE:C>:-std=gnu11>
-    $<$<COMPILE_LANGUAGE:CXX>:-std=gnu++2a>
-)
+# Set optimization flags with ThinLTO and compatibility flags
+set(OPT_FLAGS "-O3 -flto=thin -fno-split-lto-unit ${ARCH_FLAGS}")
 
-# Linker flags
-add_link_options(
-    -static
-    -O3
-    -flto
-)
+# Set global cflags and cxxflags
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPT_FLAGS} -fcolor-diagnostics -fPIC -Wno-attributes -std=gnu11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPT_FLAGS} -fcolor-diagnostics -fPIC -Wno-attributes -std=gnu++2a")
+
+# Static link with ThinLTO support and compatibility flags
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -flto=thin -fno-split-lto-unit -O3 -Wl,--lto-O3")
 
 # platform tools version
 # see the misc/platform_tools_version.h
