@@ -78,7 +78,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPT_FLAGS} -fcolor-diagnostics -fPIC -Wno-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPT_FLAGS} -fcolor-diagnostics -fPIC -Wno-attributes -std=gnu++2a")
 
 # Linker flags with aggressive dead code elimination
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -O2 -Wl,--gc-sections -Wl,--strip-all -Wl,-O2,-Wl,-z,max-page-size=16384")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -O2 -Wl,--gc-sections -Wl,--strip-all -Wl,-O2 -Wl,-z,max-page-size=16384")
 
 # platform tools version
 # see the misc/platform_tools_version.h
