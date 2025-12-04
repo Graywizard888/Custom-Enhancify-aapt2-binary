@@ -27,7 +27,7 @@ elseif(ANDROID_ABI STREQUAL "x86")
     message(STATUS "Optimizing for x86 (i686 + SSE3)")
 endif()
 
-# Aggressive optimization flags WITHOUT LTO
+# Optimization flags WITHOUT LTO
 # LTO is incompatible with NDK precompiled system libraries
 set(OPT_FLAGS "-O2 ${ARCH_FLAGS}")
 set(OPT_FLAGS "${OPT_FLAGS} -fomit-frame-pointer")
@@ -45,14 +45,22 @@ endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPT_FLAGS} -fcolor-diagnostics -fPIC -Wno-attributes -std=gnu11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPT_FLAGS} -fcolor-diagnostics -fPIC -Wno-attributes -std=gnu++2a")
 
-
 # Global link options for Android 15+ 16KB page size support
 # This ensures all binaries are compatible with 16KB page size devices
 add_link_options(
     "-Wl,-z,max-page-size=16384"
 )
-# Linker flags and dead code elimination
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -O2 -Wl,--gc-sections -Wl,--strip-unneeded -Wl,-O2")
+
+# Linker flags with dead code elimination
+# Removed -static to avoid thread library conflicts
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -O2 -Wl,--gc-sections -Wl,--strip-unneeded -Wl,-O2")
+
+# For Android, set threading library manually
+set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+set(CMAKE_HAVE_THREADS_LIBRARY 1)
+set(CMAKE_USE_WIN32_THREADS_INIT 0)
+set(CMAKE_USE_PTHREADS_INIT 1)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 # platform tools version
 # see the misc/platform_tools_version.h
