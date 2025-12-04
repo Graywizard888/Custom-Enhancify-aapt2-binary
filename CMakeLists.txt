@@ -56,6 +56,26 @@ set(SRC ${PROJECT_SOURCE_DIR}/submodules)
 # 64-bit off_t for lseek.
 add_definitions(-D_FILE_OFFSET_BITS=64)
 
+# ============================================================
+# FIX: Android pthreads are built into Bionic libc
+# Set these BEFORE any find_package(Threads) calls
+# ============================================================
+set(CMAKE_THREAD_LIBS_INIT "" CACHE STRING "Thread library" FORCE)
+set(CMAKE_HAVE_THREADS_LIBRARY 1 CACHE BOOL "Threads library available" FORCE)
+set(CMAKE_USE_WIN32_THREADS_INIT 0 CACHE BOOL "Using Win32 threads" FORCE)
+set(CMAKE_USE_PTHREADS_INIT 1 CACHE BOOL "Using pthreads" FORCE)
+set(THREADS_PREFER_PTHREAD_FLAG OFF CACHE BOOL "Prefer -pthread flag" FORCE)
+
+# Create imported Threads target manually for Android
+if(NOT TARGET Threads::Threads)
+    add_library(Threads::Threads INTERFACE IMPORTED)
+    # No need to link anything - pthreads are in libc on Android
+endif()
+
+# Mark Threads as found
+set(Threads_FOUND TRUE CACHE BOOL "Threads found" FORCE)
+# ============================================================
+
 # protoc options
 set(protobuf_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(protobuf_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
