@@ -94,7 +94,31 @@ set(protobuf_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(protobuf_BUILD_PROTOC_BINARIES OFF CACHE BOOL "" FORCE)
 set(protobuf_BUILD_LIBPROTOC ON CACHE BOOL "" FORCE)
 
-# thrid-party libraries
+# ============================================================
+# EXPAT CROSS-COMPILATION FIX
+# Android NDK provides proper off_t via sys/types.h
+# Expat's type checks fail during cross-compilation and it tries to 
+# #define off_t long, which conflicts with NDK headers
+# ============================================================
+set(SIZEOF_OFF_T 8 CACHE STRING "Size of off_t" FORCE)
+set(off_t "" CACHE STRING "off_t type - empty means use native" FORCE)
+
+# Also fix potential size_t issues for 32-bit builds
+if(ANDROID_ABI STREQUAL "armeabi-v7a" OR ANDROID_ABI STREQUAL "x86")
+    set(SIZEOF_SIZE_T 4 CACHE STRING "Size of size_t" FORCE)
+else()
+    set(SIZEOF_SIZE_T 8 CACHE STRING "Size of size_t" FORCE)
+endif()
+
+# Ensure expat doesn't redefine other standard types
+set(HAVE_SYS_TYPES_H 1 CACHE STRING "" FORCE)
+set(STDC_HEADERS 1 CACHE STRING "" FORCE)
+
+# ============================================================
+# END OF EXPAT FIX
+# ============================================================
+
+# third-party libraries
 add_subdirectory(submodules/boringssl EXCLUDE_FROM_ALL)
 add_subdirectory(submodules/fmtlib EXCLUDE_FROM_ALL)
 add_subdirectory(submodules/pcre EXCLUDE_FROM_ALL)
