@@ -29,7 +29,7 @@ endif()
 
 # Aggressive optimization flags WITHOUT LTO
 # LTO is incompatible with NDK precompiled system libraries
-set(OPT_FLAGS "-O3 ${ARCH_FLAGS}")
+set(OPT_FLAGS "-O2 ${ARCH_FLAGS}")
 set(OPT_FLAGS "${OPT_FLAGS} -fomit-frame-pointer")
 set(OPT_FLAGS "${OPT_FLAGS} -ffunction-sections")
 set(OPT_FLAGS "${OPT_FLAGS} -fdata-sections")
@@ -38,15 +38,21 @@ set(OPT_FLAGS "${OPT_FLAGS} -fvisibility-inlines-hidden")
 
 # Additional performance flags
 if(ANDROID_ABI STREQUAL "arm64-v8a" OR ANDROID_ABI STREQUAL "armeabi-v7a")
-    set(OPT_FLAGS "${OPT_FLAGS} -ffast-math")
+    set(OPT_FLAGS "${OPT_FLAGS} -fno-math-errno -fno-trapping-math")
 endif()
 
 # Set global cflags and cxxflags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPT_FLAGS} -fcolor-diagnostics -fPIC -Wno-attributes -std=gnu11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPT_FLAGS} -fcolor-diagnostics -fPIC -Wno-attributes -std=gnu++2a")
 
-# Linker flags with aggressive dead code elimination
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -O3 -Wl,--gc-sections -Wl,--strip-all -Wl,-O3")
+
+# Global link options for Android 15+ 16KB page size support
+# This ensures all binaries are compatible with 16KB page size devices
+add_link_options(
+    "-Wl,-z,max-page-size=16384"
+)
+# Linker flags and dead code elimination
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -O2 -Wl,--gc-sections -Wl,--strip-unneeded -Wl,-O2")
 
 # platform tools version
 # see the misc/platform_tools_version.h
