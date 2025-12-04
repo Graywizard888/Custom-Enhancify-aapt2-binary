@@ -28,7 +28,6 @@ elseif(ANDROID_ABI STREQUAL "x86")
 endif()
 
 # Optimization flags WITHOUT LTO
-# LTO is incompatible with NDK precompiled system libraries
 set(OPT_FLAGS "-O2 ${ARCH_FLAGS}")
 set(OPT_FLAGS "${OPT_FLAGS} -fomit-frame-pointer")
 set(OPT_FLAGS "${OPT_FLAGS} -ffunction-sections")
@@ -46,13 +45,11 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPT_FLAGS} -fcolor-diagnostics -fPIC -Wno-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPT_FLAGS} -fcolor-diagnostics -fPIC -Wno-attributes -std=gnu++2a")
 
 # Global link options for Android 15+ 16KB page size support
-# This ensures all binaries are compatible with 16KB page size devices
 add_link_options(
     "-Wl,-z,max-page-size=16384"
 )
 
 # Linker flags with dead code elimination
-# Removed -static to avoid thread library conflicts
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -O2 -Wl,--gc-sections -Wl,--strip-unneeded -Wl,-O2")
 
 # For Android, set threading library manually
@@ -63,7 +60,6 @@ set(CMAKE_USE_PTHREADS_INIT 1)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 # platform tools version
-# see the misc/platform_tools_version.h
 set(TOOLS_VERSION 36.0.0)
 set(SRC ${PROJECT_SOURCE_DIR}/submodules)
 
@@ -76,7 +72,30 @@ set(protobuf_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(protobuf_BUILD_PROTOC_BINARIES OFF CACHE BOOL "" FORCE)
 set(protobuf_BUILD_LIBPROTOC ON CACHE BOOL "" FORCE)
 
-# thrid-party libraries
+# ============================================================
+# Fix expat configuration for Android NDK
+# Android NDK already defines off_t correctly in system headers
+# These settings prevent expat from redefining off_t as a macro
+# ============================================================
+set(SIZEOF_OFF_T 8 CACHE STRING "Size of off_t" FORCE)
+set(OFF_T off_t CACHE STRING "off_t type" FORCE)
+set(_EXPAT_OFF_T_DEFINED TRUE CACHE BOOL "" FORCE)
+
+# Disable expat features that may conflict with Android
+set(EXPAT_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(EXPAT_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(EXPAT_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(EXPAT_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(EXPAT_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(EXPAT_DTD ON CACHE BOOL "" FORCE)
+set(EXPAT_NS ON CACHE BOOL "" FORCE)
+set(EXPAT_DEV_URANDOM ON CACHE BOOL "" FORCE)
+set(HAVE_GETRANDOM 0 CACHE STRING "" FORCE)
+set(HAVE_SYS_GETRANDOM 0 CACHE STRING "" FORCE)
+set(HAVE_ARC4RANDOM_BUF 0 CACHE STRING "" FORCE)
+set(HAVE_ARC4RANDOM 0 CACHE STRING "" FORCE)
+
+# third-party libraries
 add_subdirectory(submodules/boringssl EXCLUDE_FROM_ALL)
 add_subdirectory(submodules/fmtlib EXCLUDE_FROM_ALL)
 add_subdirectory(submodules/pcre EXCLUDE_FROM_ALL)
