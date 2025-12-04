@@ -3,6 +3,7 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME})
 include(aapt2.cmake)
 
 # Libraries
+include(FindThreads.cmake)
 include(libbase.cmake)
 include(liblog.cmake)
 include(libcutils.cmake)
