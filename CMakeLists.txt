@@ -1,6 +1,38 @@
 cmake_minimum_required(VERSION 3.14.2)
 project(build-tools)
 
+# ============================================================
+# CRITICAL FIX: Override find_package for Threads
+# Must be placed immediately after project()
+# Android Bionic libc has pthreads built-in, no separate library needed
+# ============================================================
+
+# Create the target immediately
+add_library(Threads::Threads INTERFACE IMPORTED GLOBAL)
+
+# Set all required cache variables
+set(Threads_FOUND TRUE CACHE BOOL "" FORCE)
+set(THREADS_FOUND TRUE CACHE BOOL "" FORCE)
+set(CMAKE_THREAD_LIBS_INIT "" CACHE STRING "" FORCE)
+set(CMAKE_HAVE_THREADS_LIBRARY TRUE CACHE BOOL "" FORCE)
+set(CMAKE_USE_PTHREADS_INIT TRUE CACHE BOOL "" FORCE)
+set(CMAKE_USE_WIN32_THREADS_INIT FALSE CACHE BOOL "" FORCE)
+set(THREADS_PREFER_PTHREAD_FLAG FALSE CACHE BOOL "" FORCE)
+
+# Override find_package to intercept Threads requests
+macro(find_package pkg)
+    if("${pkg}" STREQUAL "Threads")
+        message(STATUS "Intercepted find_package(Threads) - using Android Bionic pthreads")
+        # Do nothing, we already set everything up
+    else()
+        _find_package(${pkg} ${ARGN})
+    endif()
+endmacro()
+
+# ============================================================
+# END OF THREADS FIX
+# ============================================================
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 
@@ -55,26 +87,6 @@ set(SRC ${PROJECT_SOURCE_DIR}/submodules)
 
 # 64-bit off_t for lseek.
 add_definitions(-D_FILE_OFFSET_BITS=64)
-
-# ============================================================
-# FIX: Android pthreads are built into Bionic libc
-# Set these BEFORE any find_package(Threads) calls
-# ============================================================
-set(CMAKE_THREAD_LIBS_INIT "" CACHE STRING "Thread library" FORCE)
-set(CMAKE_HAVE_THREADS_LIBRARY 1 CACHE BOOL "Threads library available" FORCE)
-set(CMAKE_USE_WIN32_THREADS_INIT 0 CACHE BOOL "Using Win32 threads" FORCE)
-set(CMAKE_USE_PTHREADS_INIT 1 CACHE BOOL "Using pthreads" FORCE)
-set(THREADS_PREFER_PTHREAD_FLAG OFF CACHE BOOL "Prefer -pthread flag" FORCE)
-
-# Create imported Threads target manually for Android
-if(NOT TARGET Threads::Threads)
-    add_library(Threads::Threads INTERFACE IMPORTED)
-    # No need to link anything - pthreads are in libc on Android
-endif()
-
-# Mark Threads as found
-set(Threads_FOUND TRUE CACHE BOOL "Threads found" FORCE)
-# ============================================================
 
 # protoc options
 set(protobuf_BUILD_TESTS OFF CACHE BOOL "" FORCE)
