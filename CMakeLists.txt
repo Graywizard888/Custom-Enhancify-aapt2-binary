@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14.2...4.2.1)
+cmake_minimum_required(VERSION 3.14.2 ... 4.2.1)
 project(build-tools)
 
 # ============================================================
@@ -117,6 +117,9 @@ set(STDC_HEADERS 1 CACHE STRING "" FORCE)
 # ============================================================
 # END OF EXPAT FIX
 # ============================================================
+
+#FMTLIB NDK r29 COMPATIBILITY FIX
+add_compile_definitions(FMT_USE_CONSTEVAL=0)
 
 # third-party libraries
 add_subdirectory(submodules/boringssl EXCLUDE_FROM_ALL)
