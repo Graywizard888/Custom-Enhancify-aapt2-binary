@@ -5,7 +5,8 @@
 [submodule "submodules/fmtlib"]
 	shallow = true
 	path = submodules/fmtlib
-	url = https://android.googlesource.com/platform/external/fmtlib
+	url = https://github.com/fmtlib/fmt.git
+    branch = 12.1.0
 [submodule "submodules/boringssl"]
 	shallow = true
 	path = submodules/boringssl
