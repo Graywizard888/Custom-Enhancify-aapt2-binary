@@ -28,6 +28,16 @@ jobs:
           ndk-version: r29
           add-to-path: false
 
+      - name: Checkout repository
+  uses: actions/checkout@v4
+  with:
+    submodules: recursive
+
+      - name: Update fmtlib for NDK r29 compatibility
+        run: |
+         rm -rf submodules/fmtlib
+         git clone --depth 1 --branch 12.1.0 https://github.com/fmtlib/fmt.git submodules/fmtlib
+
       - name: Get protoc
         run: |
           wget https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-x86_64.zip
