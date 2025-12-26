@@ -29,9 +29,9 @@ jobs:
           add-to-path: false
 
       - name: Checkout repository
-  uses: actions/checkout@v4
-  with:
-    submodules: recursive
+        uses: actions/checkout@v4
+        with:
+         submodules: recursive
 
       - name: Update fmtlib for NDK r29 compatibility
         run: |
