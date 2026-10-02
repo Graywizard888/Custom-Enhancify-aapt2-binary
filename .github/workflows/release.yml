@@ -2,10 +2,6 @@ name: Release
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-      - dev
 
 jobs:
   build:
@@ -17,12 +13,12 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: 'true'
 
       - name: Setup NDK
-        uses: nttld/setup-ndk@v1
+        uses: nttld/setup-ndk@v1.6.0
         id: setup-ndk
         with:
           ndk-version: r27c
@@ -42,7 +38,7 @@ jobs:
         run: bash ./build.sh ${{ matrix.target_arch }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: aapt2-${{ matrix.target_arch }}
           path: ${{ github.workspace }}/build/bin/aapt2-*
@@ -57,14 +53,14 @@ jobs:
       attestations: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         with:
           # Make sure the release step uses its own credentials:
           # https://github.com/cycjimmy/semantic-release-action#private-packages
           persist-credentials: false
 
       - name: Download all built artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8.0.1
         with:
           path: ${{ github.workspace }}/build/bin/
           merge-multiple: true
@@ -76,7 +72,7 @@ jobs:
           subject-path: ${{ github.workspace }}/build/bin/aapt2-*
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "lts/*"
           cache: 'npm'
@@ -85,7 +81,7 @@ jobs:
         run: npm install
 
       - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@v7
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
